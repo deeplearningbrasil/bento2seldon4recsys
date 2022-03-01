@@ -135,7 +135,9 @@ class _FeedbackMixin(Generic[RT, RE]):
                 ]
                 logger.debug("relevance_scores: %s", relevance_scores)
 
-                ks = [min(len(relevance_scores), request.jsonData.top_k)]
+                ks = []
+                if request.jsonData.top_k <= len(relevance_scores):
+                    ks.append(request.jsonData.top_k)
                 if 10 < request.jsonData.top_k and 10 <= len(relevance_scores):
                     ks.append(10)
                 if 50 < request.jsonData.top_k and 50 <= len(relevance_scores):
