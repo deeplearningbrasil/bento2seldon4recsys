@@ -5,7 +5,7 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
 name = "bento2seldon4recsys"
-version = "0.1.0"
+version = "0.1.1"
 description = "Extension of bento2seldon for RecSys."
 readme = "README.md"
 authors = ["fernandocamargoai <fernando.camargo.ai@gmail.com>"]
