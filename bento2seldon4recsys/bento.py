@@ -143,14 +143,23 @@ class _FeedbackMixin(Generic[RT, RE]):
                 if 50 < request.jsonData.top_k and 50 <= len(relevance_scores):
                     ks.append(50)
 
+                extra = {}
+                if hasattr(self, "_extra_monitor_request_info"):
+                    extra = {
+                        label: getattr(request.jsonData, label)
+                        for label in self._extra_monitor_request_info
+                    }
+
                 for k in set(ks):
                     logger.debug("Calculating metrics for k=%d", k)
-                    self.monitor.observe_ndcg(ndcg_at_k(relevance_scores, k), k)
+                    self.monitor.observe_ndcg(
+                        ndcg_at_k(relevance_scores, k), k, extra=extra
+                    )
                     self.monitor.observe_precision(
-                        precision_at_k(relevance_scores, k), k
+                        precision_at_k(relevance_scores, k), k, extra=extra
                     )
                 self.monitor.observe_average_precision(
-                    average_precision(relevance_scores)
+                    average_precision(relevance_scores), extra=extra
                 )
 
 
