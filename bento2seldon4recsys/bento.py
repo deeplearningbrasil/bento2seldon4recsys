@@ -144,10 +144,10 @@ class _FeedbackMixin(Generic[RT, RE]):
                     ks.append(50)
 
                 extra = {}
-                if hasattr(self, "_extra_monitor_request_info"):
+                if hasattr(self, "extra_monitor_request_info"):
                     extra = {
                         label: getattr(request.jsonData, label)
-                        for label in self._extra_monitor_request_info
+                        for label in self.extra_monitor_request_info
                     }
 
                 for k in set(ks):
