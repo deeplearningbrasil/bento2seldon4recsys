@@ -99,6 +99,10 @@ class _FeedbackMixin(Generic[RT, RE]):
             self._monitor = RecommenderMonitor(self)
         return self._monitor
 
+    @property
+    def extra_monitoring_request_fields(self) -> List[str]:
+        return []
+
     def _should_threat_feedback(self, response: SeldonMessage[RE]) -> bool:
         return (
             response.meta.tags.get(PRED_UNIT_KEY) == PRED_UNIT_ID
@@ -143,12 +147,10 @@ class _FeedbackMixin(Generic[RT, RE]):
                 if 50 < request.jsonData.top_k and 50 <= len(relevance_scores):
                     ks.append(50)
 
-                extra = {}
-                if hasattr(self, "extra_monitor_request_info"):
-                    extra = {
-                        label: getattr(request.jsonData, label)
-                        for label in self.extra_monitor_request_info
-                    }
+                extra = {
+                    label: getattr(request.jsonData, label)
+                    for label in self.extra_monitoring_request_fields
+                }
 
                 for k in set(ks):
                     logger.debug("Calculating metrics for k=%d", k)
