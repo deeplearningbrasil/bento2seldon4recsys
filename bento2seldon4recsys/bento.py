@@ -10,6 +10,7 @@ from bento2seldon.bento import (
     BasePredictor,
     BaseSinglePredictor,
     ExceptionHandler,
+    ExtraMonitoringHandler,
     I,
 )
 from bento2seldon.cache import Cache
@@ -78,7 +79,7 @@ class _BaseRecommenderMixin(Generic[RT, RE]):
         return input_
 
 
-class _FeedbackMixin(Generic[RT, RE]):
+class _FeedbackMixin(Generic[RT, RE], ExtraMonitoringHandler):
     @property
     def cache(  # type: ignore[misc]
         self: BasePredictor[RT, RE]
@@ -98,10 +99,6 @@ class _FeedbackMixin(Generic[RT, RE]):
         if not hasattr(self, "_monitor"):
             self._monitor = RecommenderMonitor(self)
         return self._monitor
-
-    @property
-    def extra_monitoring_request_fields(self) -> List[str]:
-        return []
 
     def _should_threat_feedback(self, response: SeldonMessage[RE]) -> bool:
         return (
@@ -147,10 +144,7 @@ class _FeedbackMixin(Generic[RT, RE]):
                 if 50 < request.jsonData.top_k and 50 <= len(relevance_scores):
                     ks.append(50)
 
-                extra = {
-                    label: getattr(request.jsonData, label)
-                    for label in self.extra_monitoring_request_fields
-                }
+                extra = self.extract_fields_from_request(request)
 
                 for k in set(ks):
                     logger.debug("Calculating metrics for k=%d", k)
