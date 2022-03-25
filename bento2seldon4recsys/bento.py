@@ -10,6 +10,7 @@ from bento2seldon.bento import (
     BasePredictor,
     BaseSinglePredictor,
     ExceptionHandler,
+    ExtraMonitoringHandler,
     I,
 )
 from bento2seldon.cache import Cache
@@ -78,7 +79,7 @@ class _BaseRecommenderMixin(Generic[RT, RE]):
         return input_
 
 
-class _FeedbackMixin(Generic[RT, RE]):
+class _FeedbackMixin(Generic[RT, RE], ExtraMonitoringHandler):
     @property
     def cache(  # type: ignore[misc]
         self: BasePredictor[RT, RE]
@@ -143,14 +144,18 @@ class _FeedbackMixin(Generic[RT, RE]):
                 if 50 < request.jsonData.top_k and 50 <= len(relevance_scores):
                     ks.append(50)
 
+                extra = self.extract_fields_from_request(request)
+
                 for k in set(ks):
                     logger.debug("Calculating metrics for k=%d", k)
-                    self.monitor.observe_ndcg(ndcg_at_k(relevance_scores, k), k)
+                    self.monitor.observe_ndcg(
+                        ndcg_at_k(relevance_scores, k), k, extra=extra
+                    )
                     self.monitor.observe_precision(
-                        precision_at_k(relevance_scores, k), k
+                        precision_at_k(relevance_scores, k), k, extra=extra
                     )
                 self.monitor.observe_average_precision(
-                    average_precision(relevance_scores)
+                    average_precision(relevance_scores), extra=extra
                 )
 
 
