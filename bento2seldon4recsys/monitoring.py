@@ -19,7 +19,10 @@ class RecommenderMonitor(Monitor):
     ) -> None:
         if not hasattr(self, "_ndcg"):
             self._ndcg = self._create_metric(
-                Histogram, "ndcg", "nDCG@k", ["k", *extra.keys()],
+                Histogram,
+                "ndcg",
+                "nDCG@k",
+                ["k", *extra.keys()],
             )
 
         self._ndcg.labels(
